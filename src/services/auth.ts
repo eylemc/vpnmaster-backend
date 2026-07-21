@@ -1,25 +1,29 @@
-// Placeholder — replace with Supabase Auth when ready
-export type AuthUser = {
-  id: string;
-  email: string;
-};
+import type { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
-export async function signIn(email: string, password: string): Promise<void> {
-  // TODO: implement with supabase.auth.signInWithPassword({ email, password })
-  throw new Error('Authentication not yet implemented');
+export async function signInWithGoogle(): Promise<void> {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+
+  if (error) throw error;
 }
 
-export async function signUp(email: string, password: string): Promise<void> {
-  // TODO: implement with supabase.auth.signUp({ email, password })
-  throw new Error('Authentication not yet implemented');
+export async function completeOAuthCallback(code: string): Promise<void> {
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) throw error;
 }
 
 export async function signOut(): Promise<void> {
-  // TODO: implement with supabase.auth.signOut()
-  throw new Error('Authentication not yet implemented');
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 }
 
-export async function getSession(): Promise<AuthUser | null> {
-  // TODO: implement with supabase.auth.getSession()
-  return null;
+export async function getSession(): Promise<User | null> {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  return data.session?.user ?? null;
 }

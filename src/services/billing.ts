@@ -1,5 +1,6 @@
 // Placeholder — replace with Stripe Checkout when ready
 export async function startCheckout(_email: string): Promise<void> {
+  void _email;
   // TODO: invoke a Supabase Edge Function that creates a Stripe Checkout Session
   throw new Error('Stripe Checkout not yet connected');
 }

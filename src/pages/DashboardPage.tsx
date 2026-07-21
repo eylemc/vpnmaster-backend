@@ -1,17 +1,11 @@
-import { Shield, Wifi, Monitor, Download, QrCode, Activity, CreditCard, LogOut, PlusCircle, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Wifi, Monitor, Download, QrCode, Activity, CreditCard, LogOut, PlusCircle, Info } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { signOut } from '../services/auth';
 import { openBillingPortal } from '../services/billing';
 import { downloadConfig } from '../services/vpn';
-
-function handleSignOut() {
-  signOut().catch(() => {
-    alert('Sign-out is not yet implemented.');
-  });
-}
 
 function handleBillingPortal() {
   openBillingPortal().catch(() => {
@@ -34,6 +28,16 @@ function handleShowQR() {
 }
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+      navigate('/login', { replace: true });
+    } catch {
+      alert('Sign-out failed. Please try again.');
+    }
+  }
   return (
     <DashboardLayout>
       {/* Page header */}
