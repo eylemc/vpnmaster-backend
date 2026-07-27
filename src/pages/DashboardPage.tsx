@@ -1,11 +1,13 @@
-import { Wifi, Monitor, Download, QrCode, Activity, CreditCard, LogOut, PlusCircle, Info } from 'lucide-react';
+import { FormEvent, useEffect, useState } from 'react';
+import { Wifi, Monitor, Download, QrCode, Activity, CreditCard, LogOut, PlusCircle, Info, X, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { signOut } from '../services/auth';
 import { openBillingPortal } from '../services/billing';
-import { downloadConfig } from '../services/vpn';
+import { addDevice, downloadConfig, listDevices, type Device } from '../services/vpn';
+import { useAuth } from '../context/AuthContext';
 
 function handleBillingPortal() {
   openBillingPortal().catch(() => {
@@ -19,16 +21,72 @@ function handleDownloadConfig() {
   });
 }
 
-function handleAddDevice() {
-  alert('Device provisioning is not yet implemented.');
-}
-
 function handleShowQR() {
   alert('QR code generation is not yet implemented.');
 }
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [devicesLoading, setDevicesLoading] = useState(true);
+  const [devicesError, setDevicesError] = useState('');
+  const [addDeviceOpen, setAddDeviceOpen] = useState(false);
+  const [deviceName, setDeviceName] = useState('');
+  const [addingDevice, setAddingDevice] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    let cancelled = false;
+    setDevicesLoading(true);
+    setDevicesError('');
+
+    listDevices(user.id)
+      .then((result) => {
+        if (!cancelled) {
+          setDevices(result);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDevicesError('Devices could not be loaded.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setDevicesLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  async function handleAddDevice(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!user) {
+      return;
+    }
+
+    setAddingDevice(true);
+    setDevicesError('');
+
+    try {
+      const device = await addDevice(user.id, deviceName);
+      setDevices((current) => [...current, device]);
+      setDeviceName('');
+      setAddDeviceOpen(false);
+    } catch (error) {
+      setDevicesError(error instanceof Error ? error.message : 'Device could not be added.');
+    } finally {
+      setAddingDevice(false);
+    }
+  }
 
   async function handleSignOut() {
     try {
@@ -91,14 +149,26 @@ export default function DashboardPage() {
             <span className="text-xs font-medium text-slate-400 uppercase tracking-widest">Devices</span>
           </div>
           <div className="flex items-baseline gap-1 mb-1">
-            <span className="text-2xl font-bold text-white font-mono">0</span>
+            <span className="text-2xl font-bold text-white font-mono">
+              {devicesLoading ? '—' : devices.length}
+            </span>
             <span className="text-slate-500 text-sm">/ 3</span>
           </div>
-          <p className="text-xs text-slate-500 mb-5">No devices registered yet.</p>
-          <Button variant="secondary" size="sm" onClick={handleAddDevice}>
+          <p className="text-xs text-slate-500 mb-5">
+            {devices.length === 0
+              ? 'No devices registered yet.'
+              : `${devices.length} device${devices.length === 1 ? '' : 's'} registered.`}
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setAddDeviceOpen(true)}
+            disabled={devicesLoading || devices.length >= 3}
+          >
             <PlusCircle className="w-3.5 h-3.5" />
             Add Device
           </Button>
+          {devicesError && <p className="mt-3 text-xs text-red-400">{devicesError}</p>}
         </Card>
       </div>
 
@@ -113,7 +183,24 @@ export default function DashboardPage() {
           <p className="text-sm text-slate-400 mb-5 leading-relaxed">
             Once a device is provisioned, download its WireGuard configuration file or display a QR code to import it directly into the WireGuard app.
           </p>
-          <EmptyState message="Add a device to generate a configuration." />
+          {devices.length === 0 ? (
+            <EmptyState message="Add a device to generate a configuration." />
+          ) : (
+            <div className="space-y-2">
+              {devices.map((device) => (
+                <div
+                  key={device.id}
+                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-200">{device.name}</p>
+                    <p className="mt-0.5 text-xs capitalize text-slate-500">{device.status}</p>
+                  </div>
+                  <span className="ml-3 h-2 w-2 flex-shrink-0 rounded-full bg-amber-400/70" />
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex gap-3 mt-5">
             <Button variant="secondary" size="sm" onClick={handleDownloadConfig} disabled>
               <Download className="w-3.5 h-3.5" />
@@ -178,6 +265,69 @@ export default function DashboardPage() {
           &larr; Back to home
         </Link>
       </p>
+
+      {addDeviceOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 px-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-device-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !addingDevice) {
+              setAddDeviceOpen(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111827] p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 id="add-device-title" className="text-lg font-semibold text-white">Add a device</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Give this device a name you will recognize.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-lg p-1 text-slate-500 transition-colors hover:bg-white/5 hover:text-white"
+                onClick={() => setAddDeviceOpen(false)}
+                disabled={addingDevice}
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddDevice}>
+              <label htmlFor="device-name" className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
+                Device name
+              </label>
+              <input
+                id="device-name"
+                value={deviceName}
+                onChange={(event) => setDeviceName(event.target.value)}
+                maxLength={50}
+                autoFocus
+                placeholder="e.g. MacBook Pro"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-cyan-400/60 focus:outline-none"
+              />
+              {devicesError && <p className="mt-2 text-xs text-red-400">{devicesError}</p>}
+              <div className="mt-6 flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setAddDeviceOpen(false)}
+                  disabled={addingDevice}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={addingDevice || !deviceName.trim()}>
+                  {addingDevice && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Add Device
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
