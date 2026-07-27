@@ -1,0 +1,45 @@
+services:
+  provisioning:
+    build:
+      context: .
+    container_name: vpnmaster-provisioning
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - wg-easy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: vpnmaster-caddy
+    restart: unless-stopped
+    depends_on:
+      - provisioning
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - wg-easy
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  wg-easy:
+    external: true
+    name: wg-easy_wg
+
+volumes:
+  caddy_data:
+  caddy_config:
