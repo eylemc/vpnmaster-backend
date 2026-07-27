@@ -577,7 +577,23 @@ function AppStoreLinks() {
         rel="noopener noreferrer"
         className={linkClasses}
       >
-        Google Play
+        Android
+      </a>
+      <a
+        href="https://apps.apple.com/us/app/wireguard/id1451685025?mt=12"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={linkClasses}
+      >
+        macOS
+      </a>
+      <a
+        href="https://download.wireguard.com/windows-client/wireguard-installer.exe"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={linkClasses}
+      >
+        Windows
       </a>
     </>
   );
