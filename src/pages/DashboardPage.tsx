@@ -452,7 +452,7 @@ export default function DashboardPage() {
                   {selectedDevice.name}
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  Scan with the WireGuard app.
+                  Scan on another device, or download the config on this one.
                 </p>
               </div>
               <button
@@ -467,8 +467,43 @@ export default function DashboardPage() {
             <img
               src={qrCodeUrl}
               alt={`WireGuard QR code for ${selectedDevice.name}`}
-              className="mx-auto w-full rounded-xl bg-white p-3"
+              className="mx-auto w-full max-w-[300px] rounded-xl bg-white p-3"
             />
+            <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-left">
+              <p className="text-sm font-medium text-slate-200">Using this phone?</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                Install WireGuard, download the configuration, then open the downloaded
+                <span className="font-mono text-slate-300"> .conf </span>
+                file with WireGuard.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href="https://apps.apple.com/us/app/wireguard/id1441195209"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition-colors hover:border-white/20 hover:bg-white/10"
+                >
+                  WireGuard for iOS
+                </a>
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.wireguard.android"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition-colors hover:border-white/20 hover:bg-white/10"
+                >
+                  WireGuard for Android
+                </a>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                className="mt-3 w-full"
+                onClick={handleDownloadConfig}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download Config to This Device
+              </Button>
+            </div>
           </div>
         </div>
       )}
