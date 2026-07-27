@@ -25,7 +25,9 @@ user's Supabase access token, checks device ownership, provisions the peer throu
 wg-easy, and streams configuration files without persisting private keys in Supabase.
 
 Copy `provisioning-api/.env.example` to `provisioning-api/.env` on the VPN server,
-fill in the secrets locally, and start it with:
+fill in the secrets locally, and start it with the command below. Use a current
+Supabase `sb_secret_...` key for `SUPABASE_SECRET_KEY`; never use that key in the
+frontend or commit it to Git.
 
 ```bash
 docker compose -f provisioning-api/compose.yml up -d --build
