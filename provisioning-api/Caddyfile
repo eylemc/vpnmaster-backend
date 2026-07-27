@@ -1,0 +1,4 @@
+nl1.vpnmaster.com {
+	encode zstd gzip
+	reverse_proxy provisioning:3000
+}
