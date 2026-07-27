@@ -6,7 +6,7 @@ const config = {
   port: Number(process.env.PORT ?? 3000),
   supabaseUrl: required('SUPABASE_URL').replace(/\/$/, ''),
   supabaseAnonKey: required('SUPABASE_ANON_KEY'),
-  supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
+  supabaseSecretKey: required('SUPABASE_SECRET_KEY'),
   wgEasyUrl: required('WGEASY_URL').replace(/\/$/, ''),
   wgEasyUsername: required('WGEASY_USERNAME'),
   wgEasyPassword: required('WGEASY_PASSWORD'),
@@ -256,8 +256,8 @@ function supabaseAdmin(path, options = {}) {
   return fetch(`${config.supabaseUrl}${path}`, {
     ...options,
     headers: {
-      apikey: config.supabaseServiceRoleKey,
-      authorization: `Bearer ${config.supabaseServiceRoleKey}`,
+      apikey: config.supabaseSecretKey,
+      authorization: `Bearer ${config.supabaseSecretKey}`,
       'content-type': 'application/json',
       ...options.headers,
     },
