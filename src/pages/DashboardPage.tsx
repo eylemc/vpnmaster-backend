@@ -6,23 +6,20 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import { signOut } from '../services/auth';
 import { openBillingPortal } from '../services/billing';
-import { addDevice, downloadConfig, listDevices, type Device } from '../services/vpn';
+import {
+  addDevice,
+  downloadConfig,
+  getQrCodeUrl,
+  listDevices,
+  provisionDevice,
+  type Device,
+} from '../services/vpn';
 import { useAuth } from '../context/AuthContext';
 
 function handleBillingPortal() {
   openBillingPortal().catch(() => {
     alert('Billing portal is not yet connected.');
   });
-}
-
-function handleDownloadConfig() {
-  downloadConfig('').catch(() => {
-    alert('Configuration download is not yet available.');
-  });
-}
-
-function handleShowQR() {
-  alert('QR code generation is not yet implemented.');
 }
 
 export default function DashboardPage() {
@@ -34,6 +31,11 @@ export default function DashboardPage() {
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
   const [deviceName, setDeviceName] = useState('');
   const [addingDevice, setAddingDevice] = useState(false);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [provisioningDeviceId, setProvisioningDeviceId] = useState<string | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const selectedDevice =
+    devices.find((device) => device.id === selectedDeviceId) ?? devices[0] ?? null;
 
   useEffect(() => {
     if (!user) {
@@ -48,6 +50,7 @@ export default function DashboardPage() {
       .then((result) => {
         if (!cancelled) {
           setDevices(result);
+          setSelectedDeviceId((current) => current ?? result[0]?.id ?? null);
         }
       })
       .catch(() => {
@@ -77,15 +80,76 @@ export default function DashboardPage() {
     setDevicesError('');
 
     try {
-      const device = await addDevice(user.id, deviceName);
-      setDevices((current) => [...current, device]);
+      const pendingDevice = await addDevice(user.id, deviceName);
+      setDevices((current) => [...current, pendingDevice]);
+      setSelectedDeviceId(pendingDevice.id);
       setDeviceName('');
       setAddDeviceOpen(false);
+      await activateDevice(pendingDevice);
     } catch (error) {
       setDevicesError(error instanceof Error ? error.message : 'Device could not be added.');
     } finally {
       setAddingDevice(false);
     }
+  }
+
+  async function activateDevice(device: Device) {
+    setProvisioningDeviceId(device.id);
+    setDevicesError('');
+    setDevices((current) =>
+      current.map((item) =>
+        item.id === device.id ? { ...item, status: 'provisioning' } : item,
+      ),
+    );
+
+    try {
+      const activeDevice = await provisionDevice(device.id);
+      setDevices((current) =>
+        current.map((item) =>
+          item.id === activeDevice.id ? { ...item, ...activeDevice } : item,
+        ),
+      );
+    } catch (error) {
+      setDevices((current) =>
+        current.map((item) =>
+          item.id === device.id ? { ...item, status: 'error' } : item,
+        ),
+      );
+      setDevicesError(error instanceof Error ? error.message : 'Device activation failed.');
+    } finally {
+      setProvisioningDeviceId(null);
+    }
+  }
+
+  async function handleDownloadConfig() {
+    if (!selectedDevice) {
+      return;
+    }
+
+    try {
+      await downloadConfig(selectedDevice);
+    } catch (error) {
+      setDevicesError(error instanceof Error ? error.message : 'Configuration download failed.');
+    }
+  }
+
+  async function handleShowQR() {
+    if (!selectedDevice) {
+      return;
+    }
+
+    try {
+      setQrCodeUrl(await getQrCodeUrl(selectedDevice.id));
+    } catch (error) {
+      setDevicesError(error instanceof Error ? error.message : 'QR code could not be loaded.');
+    }
+  }
+
+  function closeQrCode() {
+    if (qrCodeUrl) {
+      URL.revokeObjectURL(qrCodeUrl);
+    }
+    setQrCodeUrl(null);
   }
 
   async function handleSignOut() {
@@ -190,23 +254,63 @@ export default function DashboardPage() {
               {devices.map((device) => (
                 <div
                   key={device.id}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+                  className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${
+                    selectedDevice?.id === device.id
+                      ? 'border-cyan-400/30 bg-cyan-400/[0.04]'
+                      : 'border-white/10 bg-white/[0.02]'
+                  }`}
+                  onClick={() => setSelectedDeviceId(device.id)}
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-slate-200">{device.name}</p>
-                    <p className="mt-0.5 text-xs capitalize text-slate-500">{device.status}</p>
+                    <p className="mt-0.5 text-xs capitalize text-slate-500">
+                      {device.status}
+                      {device.ipv4_address ? ` · ${device.ipv4_address}` : ''}
+                    </p>
                   </div>
-                  <span className="ml-3 h-2 w-2 flex-shrink-0 rounded-full bg-amber-400/70" />
+                  <span
+                    className={`ml-3 h-2 w-2 flex-shrink-0 rounded-full ${
+                      device.status === 'active'
+                        ? 'bg-emerald-400'
+                        : device.status === 'error'
+                          ? 'bg-red-400'
+                          : 'bg-amber-400/70'
+                    }`}
+                  />
                 </div>
               ))}
             </div>
           )}
+          {selectedDevice && selectedDevice.status !== 'active' && (
+            <Button
+              variant="primary"
+              size="sm"
+              className="mt-4"
+              onClick={() => activateDevice(selectedDevice)}
+              disabled={provisioningDeviceId === selectedDevice.id}
+            >
+              {provisioningDeviceId === selectedDevice.id && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              {selectedDevice.status === 'error' ? 'Retry Activation' : 'Activate Device'}
+            </Button>
+          )}
           <div className="flex gap-3 mt-5">
-            <Button variant="secondary" size="sm" onClick={handleDownloadConfig} disabled>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleDownloadConfig}
+              disabled={selectedDevice?.status !== 'active'}
+            >
               <Download className="w-3.5 h-3.5" />
               Download Config
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleShowQR} disabled>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleShowQR}
+              disabled={selectedDevice?.status !== 'active'}
+            >
               <QrCode className="w-3.5 h-3.5" />
               Show QR Code
             </Button>
@@ -325,6 +429,46 @@ export default function DashboardPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {qrCodeUrl && selectedDevice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 px-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-code-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeQrCode();
+            }
+          }}
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#111827] p-6 text-center shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4 text-left">
+              <div>
+                <h2 id="qr-code-title" className="text-lg font-semibold text-white">
+                  {selectedDevice.name}
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Scan with the WireGuard app.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-lg p-1 text-slate-500 transition-colors hover:bg-white/5 hover:text-white"
+                onClick={closeQrCode}
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <img
+              src={qrCodeUrl}
+              alt={`WireGuard QR code for ${selectedDevice.name}`}
+              className="mx-auto w-full rounded-xl bg-white p-3"
+            />
           </div>
         </div>
       )}
