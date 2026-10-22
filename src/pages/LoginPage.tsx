@@ -30,7 +30,7 @@ export default function LoginPage() {
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
             <Shield className="w-4 h-4 text-cyan-400" strokeWidth={1.75} />
           </div>
-          <span className="text-white font-semibold text-sm tracking-tight">VPNMaster <span className="text-cyan-400">AI VPN</span></span>
+          <span className="text-white font-semibold text-sm tracking-tight">VPN MASTER <span className="text-cyan-400">AI VPN</span></span>
         </Link>
 
         <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-8">

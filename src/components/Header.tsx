@@ -23,7 +23,7 @@ export default function Header() {
             <Shield className="w-4 h-4 text-cyan-400" strokeWidth={1.75} />
           </div>
           <span className="text-white font-semibold text-sm tracking-tight">
-            VPNMaster <span className="text-cyan-400">AI VPN</span>
+            VPN MASTER <span className="text-cyan-400">AI VPN</span>
           </span>
         </Link>
 

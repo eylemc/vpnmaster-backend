@@ -12,7 +12,7 @@ export default function RefundPolicyPage() {
 
         <Section title="Overview">
           <p>
-            VPNMaster AI VPN is a monthly subscription service. This policy describes the circumstances under which refunds may be issued.
+            VPN MASTER AI VPN is a monthly subscription service. This policy describes the circumstances under which refunds may be issued.
           </p>
         </Section>
 

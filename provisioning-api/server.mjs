@@ -97,7 +97,7 @@ const server = http.createServer(async (request, response) => {
 });
 
 server.listen(config.port, '0.0.0.0', () => {
-  console.log(`VPNMaster provisioning API listening on :${config.port}`);
+  console.log(`VPN MASTER provisioning API listening on :${config.port}`);
 });
 
 async function authenticateUser(accessToken) {

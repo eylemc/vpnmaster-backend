@@ -1,4 +1,4 @@
-# VPNMaster backend setup
+# VPN MASTER backend setup
 
 1. Create a Supabase project.
 2. Run the SQL files in `supabase/migrations` in filename order in the Supabase SQL editor:

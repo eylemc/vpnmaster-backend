@@ -123,7 +123,7 @@ export default function LandingPage() {
             Built for people who take privacy seriously
           </h2>
           <p className="text-slate-400 max-w-xl mb-14">
-            VPNMaster AI VPN combines WireGuard's proven security with AI-powered connection health monitoring — designed to give you insight, not surveillance.
+            VPN MASTER AI VPN combines WireGuard's proven security with AI-powered connection health monitoring — designed to give you insight, not surveillance.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-6">
@@ -189,7 +189,7 @@ export default function LandingPage() {
                 <span className="text-4xl font-bold text-white">$7.99</span>
                 <span className="text-slate-400 text-sm">/month</span>
               </div>
-              <div className="text-sm font-medium text-cyan-400 mb-6">VPNMaster AI VPN</div>
+              <div className="text-sm font-medium text-cyan-400 mb-6">VPN MASTER AI VPN</div>
               <ul className="space-y-3 mb-8">
                 {[
                   'Up to 3 devices',

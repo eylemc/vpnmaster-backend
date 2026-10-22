@@ -12,13 +12,13 @@ export default function TermsPage() {
 
         <Section title="Agreement">
           <p>
-            By creating an account or using VPNMaster AI VPN, you agree to these Terms of Service and our Privacy Policy. If you do not agree, do not use the service.
+            By creating an account or using VPN MASTER AI VPN, you agree to these Terms of Service and our Privacy Policy. If you do not agree, do not use the service.
           </p>
         </Section>
 
         <Section title="Service Description">
           <p>
-            VPNMaster AI VPN provides a WireGuard-based VPN service with AI-assisted connection health monitoring. The service is offered on a subscription basis. Feature availability may change over time.
+            VPN MASTER AI VPN provides a WireGuard-based VPN service with AI-assisted connection health monitoring. The service is offered on a subscription basis. Feature availability may change over time.
           </p>
         </Section>
 

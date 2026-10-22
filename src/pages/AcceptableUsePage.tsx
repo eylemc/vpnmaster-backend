@@ -12,12 +12,12 @@ export default function AcceptableUsePage() {
 
         <Section title="Purpose">
           <p>
-            This Acceptable Use Policy ("AUP") governs how you may use VPNMaster AI VPN. By using the service, you agree to comply with this policy.
+            This Acceptable Use Policy ("AUP") governs how you may use VPN MASTER AI VPN. By using the service, you agree to comply with this policy.
           </p>
         </Section>
 
         <Section title="Prohibited Uses">
-          <p>You may not use VPNMaster AI VPN to:</p>
+          <p>You may not use VPN MASTER AI VPN to:</p>
           <ul className="list-disc list-inside mt-3 space-y-1.5 text-slate-400">
             <li>Engage in illegal activity under any applicable law.</li>
             <li>Distribute malware, spyware, or other malicious software.</li>
@@ -33,7 +33,7 @@ export default function AcceptableUsePage() {
 
         <Section title="Bandwidth and Fair Use">
           <p>
-            VPNMaster AI VPN is intended for personal use. Excessive bandwidth consumption that disrupts service for other users may result in account review or suspension.
+            VPN MASTER AI VPN is intended for personal use. Excessive bandwidth consumption that disrupts service for other users may result in account review or suspension.
           </p>
         </Section>
 

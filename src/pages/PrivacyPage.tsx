@@ -12,7 +12,7 @@ export default function PrivacyPage() {
 
         <Section title="Overview">
           <p>
-            VPNMaster AI VPN is operated by VPNMASTER, INC., a Delaware corporation. This policy describes how we collect, use, and protect information when you use our VPN service.
+            VPN MASTER AI VPN is operated by VPNMASTER, INC., a Delaware corporation. This policy describes how we collect, use, and protect information when you use our VPN service.
           </p>
         </Section>
 
